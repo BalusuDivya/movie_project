@@ -1,19 +1,17 @@
 from flask import jsonify
 from flask.views import MethodView
 
-# Dummy database to hold movie examples
+# Sample movie catalog data used to demonstrate the app's behavior.
 movies = {
-    "123": {"title": "Top Gun: Maverick", "description": "Fighter planes"},
-    "456": {"title": "Sonic the Hedgehog", "description": "Blue Sega character"},
-    "789": {"title": "A Quiet Place", "description": "Scary monsters"},
+    "123": {"title": "City Lights", "description": "A thoughtful story about ambition and second chances."},
+    "456": {"title": "Night Signal", "description": "A suspenseful thriller centered on a missing radio host."},
+    "789": {"title": "River Echo", "description": "A reflective drama following a family reunion across generations."},
 }
 
 
 class Movies(MethodView):
     def get(self, movie_id):
         if movie_id is None:
-            # Return a list of all movies
             return jsonify({"movies": [dict({"title": movie["title"]}, **{"id": i}) for i, movie in movies.items()]})
         else:
-            # Return the details of a specific movie
             return jsonify({"movie": movies[str(movie_id)]})

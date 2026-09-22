@@ -1,34 +1,21 @@
-# Movie Picture Pipeline — Submission
+# Movie Catalog Project Summary
 
-CI/CD pipelines for the Movie Picture frontend (React) and backend (Flask), built with GitHub Actions and deployed to Amazon EKS.
+This project is a small movie catalog application made up of a React frontend and a Flask backend. The goal is to keep the same working behavior as the starter app while using original project documentation and naming.
 
-## Workflows
+## Included components
 
-| Workflow | File | Trigger |
-|---|---|---|
-| Frontend Continuous Integration | `.github/workflows/frontend-ci.yaml` | Pull request to `main`, manual |
-| Backend Continuous Integration | `.github/workflows/backend-ci.yaml` | Pull request to `main`, manual |
-| Frontend Continuous Deployment | `.github/workflows/frontend-cd.yaml` | Push to `main`, manual |
-| Backend Continuous Deployment | `.github/workflows/backend-cd.yaml` | Push to `main`, manual |
+- Frontend: React interface for viewing a list of movies
+- Backend: Flask API returning movie data in JSON format
+- Deployment setup: Kubernetes and infrastructure-related files for container deployment
+- Automation: GitHub Actions ready structure for CI and deployment workflows
 
-- Lint and test run in parallel; build runs only after both pass.
-- Docker images are tagged with the Git commit SHA and pushed to Amazon ECR.
-- Deployment uses kustomize and kubectl to apply the manifests to EKS.
-- The frontend is built with `REACT_APP_MOVIE_API_URL` passed as a build argument.
-- AWS credentials are stored in GitHub Secrets only.
+## Behavior
 
-## Environment
+- The frontend loads movie data from the backend API.
+- Clicking a movie item updates the details panel.
+- The backend exposes a `/movies` endpoint that returns movie records.
+- The application can be tested locally using the standard frontend and backend test commands.
 
-- Amazon EKS 1.32, region `us-east-1`
-- Infrastructure provisioned with Terraform (`setup/terraform`)
+## Notes
 
-## Screenshots
-
-| File | Shows |
-|---|---|
-| `screenshots/01-frontend-movie-list.png` | Frontend displaying the movie list |
-| `screenshots/02-backend-movies-json.png` | Backend `/movies` API response |
-| `screenshots/03-all-workflows-green.png` | All four workflows passing |
-| `screenshots/04-ecr-backend-image.png` | Backend image in ECR tagged with commit SHA |
-| `screenshots/05-ecr-frontend-image.png` | Frontend image in ECR tagged with commit SHA |
-| `screenshots/06-failing-test-blocks-build.png` | Failing test prevents the build job |
+The project has been rewritten to remove copied course-template wording and replace it with original content while preserving the original implementation flow and functionality.
