@@ -114,6 +114,7 @@ jobs:
     name: Deploy to EKS
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -142,4 +143,34 @@ jobs:
           kustomize edit set image frontend=${{ needs.build.outputs.image }}
           kustomize build | kubectl apply -f -
           kubectl rollout status deployment/frontend --timeout=300s
-          kubectl get svc
+
+      - name: Verify public frontend and movie API
+        run: |
+          for attempt in $(seq 1 60); do
+            HOST=$(kubectl get svc frontend -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            if [ -z "$HOST" ]; then
+              HOST=$(kubectl get svc frontend -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            fi
+            if [ -n "$HOST" ] && curl --fail --silent --show-error "http://$HOST/" -o frontend.html; then
+              break
+            fi
+            if [ "$attempt" -eq 60 ]; then
+              echo "Frontend public endpoint did not become healthy: http://${HOST:-pending}/"
+              exit 1
+            fi
+            sleep 10
+          done
+          grep -q '<div id="root"></div>' frontend.html
+          BACKEND_HOST=$(kubectl get svc backend -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          if [ -z "$BACKEND_HOST" ]; then
+            BACKEND_HOST=$(kubectl get svc backend -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          fi
+          if [ -z "$BACKEND_HOST" ] || ! curl --fail --silent --show-error "http://$BACKEND_HOST/movies" -o movies.json; then
+            echo "Backend public endpoint is unavailable: http://${BACKEND_HOST:-pending}/movies"
+            exit 1
+          fi
+          python -c 'import json; data=json.load(open("movies.json")); assert isinstance(data.get("movies"), list) and data["movies"], "Expected non-empty movies array"'
+          echo "## Frontend deployment verification" >> "$GITHUB_STEP_SUMMARY"
+          echo "Frontend: http://$HOST/" >> "$GITHUB_STEP_SUMMARY"
+          echo "Movie API: http://$BACKEND_HOST/movies" >> "$GITHUB_STEP_SUMMARY"
+          echo "The frontend served its application shell and the configured movie API returned successfully." >> "$GITHUB_STEP_SUMMARY"
